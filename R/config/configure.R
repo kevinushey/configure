@@ -203,13 +203,6 @@ if (exists("configure", envir = envir, inherits = FALSE)) {
     config <- configure()
 }
 
-# configure .in files
-inputs <- getOption("configure.inputs", default = {
-    list.files(c("R", "src"), pattern = "[.]in$", full.names = TRUE)
-})
-for (input in inputs)
-    configure_file(input, config = config, verbose = TRUE)
-
 fmt <- "* successfully configured package '%s'"
 message(sprintf(fmt, DESCRIPTION$Package))
 
