@@ -6,6 +6,10 @@
 #' @export
 use_configure <- function(package = ".") {
 
+    # move to package directory
+    owd <- setwd(package)
+    on.exit(setwd(owd), add = TRUE)
+
     # find resources
     package <- normalizePath(package, winslash = "/")
     resources <- system.file("resources", package = "configure")
@@ -24,4 +28,12 @@ use_configure <- function(package = ".") {
 
     # now, copy these files back into the target directory
     file.copy(basename(package), dirname(package), recursive = TRUE)
+
+    # ensure DESCRIPTION contains 'Biarch: TRUE' for Windows
+    DESCRIPTION <- read_file("DESCRIPTION")
+    if (!grepl("(?:^|\n)Biarch:", DESCRIPTION)) {
+        DESCRIPTION <- paste(DESCRIPTION, "Biarch: TRUE", sep = "\n")
+        DESCRIPTION <- gsub("\n{2,}", "\n", DESCRIPTION)
+        cat(DESCRIPTION, file = "DESCRIPTION", sep = "\n")
+    }
 }
