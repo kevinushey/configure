@@ -39,25 +39,40 @@ configure_file <- function(
 #' Read the \R configuration, as through `R CMD config --all`.
 #'
 #' @param package The path to an \R package's sources.
+#' @param values The \R configuration values to read (as a character vector).
+#'   If `NULL` (the default), all values are read (as through `R CMD config --all`).
+#' @param verbose Boolean; notify the user as \R configuration is read?
 #'
 #' @export
-read_config <- function(package = ".") {
-
+read_config <- function(
+    package = ".",
+    values  = NULL,
+    verbose = getOption("configure.verbose", TRUE))
+{
     # move to requested directory
     owd <- setwd(package)
     on.exit(setwd(owd), add = TRUE)
-
-    # read R configuration
     R <- file.path(R.home("bin"), "R")
-    config <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
 
-    # parse configuration
-    equalsIndex <- regexpr("=", config, fixed = TRUE)
-    keys <- trim_whitespace(substring(config, 1, equalsIndex - 1))
-    vals <- trim_whitespace(substring(config, equalsIndex + 1))
-    names(vals) <- keys
+    if (is.null(values)) {
+        if (verbose)
+            message("** executing 'R CMD config --all'")
+        output <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
+        equalsIndex <- regexpr("=", output, fixed = TRUE)
+        keys <- trim_whitespace(substring(output, 1, equalsIndex - 1))
+        config <- as.list(trim_whitespace(substring(output, equalsIndex + 1)))
+        names(config) <- keys
 
-    list2env(as.list(vals), parent = globalenv())
+    } else {
+        if (verbose)
+            message("** executing 'R CMD config'")
+        config <- lapply(values, function(value) {
+            system2(R, c("CMD", "config", value), stdout = TRUE)
+        })
+        names(config) <- values
+    }
+
+    list2env(config, parent = globalenv())
 }
 
 #' Concatenate the Contents of a Set of Files
@@ -158,10 +173,6 @@ DESCRIPTION <- read.dcf("DESCRIPTION", all = TRUE)
 fmt <- "* configuring package '%s' ..."
 message(sprintf(fmt, DESCRIPTION$Package))
 
-# read R configuration
-message("** executing R CMD config --all")
-config <- read_config()
-
 # overlay user configuration
 envir <- new.env(parent = globalenv())
 files <- list.files("R/config/scripts", pattern = "[.][rR]$", full.names = TRUE)
@@ -172,14 +183,17 @@ for (file in files) {
 }
 
 # apply configure script (if any)
+config <- list()
 if (exists("configure", envir = envir, inherits = FALSE)) {
     configure <- get("configure", envir = envir, inherits = FALSE)
     message("** executing user-defined configure script")
-    configure(config)
+    config <- configure()
 }
 
 # configure .in files
-inputs <- list.files(pattern = "[.]in$", recursive = TRUE)
+inputs <- getOption("configure.inputs", default = {
+    list.files(c("R", "src"), pattern = "[.]in$", full.names = TRUE)
+})
 for (input in inputs)
     configure_file(input, config = config, verbose = TRUE)
 

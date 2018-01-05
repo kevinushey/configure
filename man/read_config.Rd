@@ -4,10 +4,16 @@
 \alias{read_config}
 \title{Read R Configuration for a Package}
 \usage{
-read_config(package = ".")
+read_config(package = ".", values = NULL,
+  verbose = getOption("configure.verbose", TRUE))
 }
 \arguments{
 \item{package}{The path to an \R package's sources.}
+
+\item{values}{The \R configuration values to read (as a character vector).
+If `NULL` (the default), all values are read (as through `R CMD config --all`).}
+
+\item{verbose}{Boolean; notify the user as \R configuration is read?}
 }
 \description{
 Read the \R configuration, as through `R CMD config --all`.

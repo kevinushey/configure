@@ -37,25 +37,40 @@ configure_file <- function(
 #' Read the \R configuration, as through `R CMD config --all`.
 #'
 #' @param package The path to an \R package's sources.
+#' @param values The \R configuration values to read (as a character vector).
+#'   If `NULL` (the default), all values are read (as through `R CMD config --all`).
+#' @param verbose Boolean; notify the user as \R configuration is read?
 #'
 #' @export
-read_config <- function(package = ".") {
-
+read_config <- function(
+    package = ".",
+    values  = NULL,
+    verbose = getOption("configure.verbose", TRUE))
+{
     # move to requested directory
     owd <- setwd(package)
     on.exit(setwd(owd), add = TRUE)
-
-    # read R configuration
     R <- file.path(R.home("bin"), "R")
-    config <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
 
-    # parse configuration
-    equalsIndex <- regexpr("=", config, fixed = TRUE)
-    keys <- trim_whitespace(substring(config, 1, equalsIndex - 1))
-    vals <- trim_whitespace(substring(config, equalsIndex + 1))
-    names(vals) <- keys
+    if (is.null(values)) {
+        if (verbose)
+            message("** executing 'R CMD config --all'")
+        output <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
+        equalsIndex <- regexpr("=", output, fixed = TRUE)
+        keys <- trim_whitespace(substring(output, 1, equalsIndex - 1))
+        config <- as.list(trim_whitespace(substring(output, equalsIndex + 1)))
+        names(config) <- keys
 
-    list2env(as.list(vals), parent = globalenv())
+    } else {
+        if (verbose)
+            message("** executing 'R CMD config'")
+        config <- lapply(values, function(value) {
+            system2(R, c("CMD", "config", value), stdout = TRUE)
+        })
+        names(config) <- values
+    }
+
+    list2env(config, parent = globalenv())
 }
 
 #' Concatenate the Contents of a Set of Files
