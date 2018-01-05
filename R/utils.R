@@ -126,7 +126,7 @@ enumerate <- function(x, f, ...) {
 }
 
 read_file <- function(path) {
-    readChar(path, file.info(path)$size, TRUE)
+    paste(readLines(path, warn = FALSE), collapse = "\n")
 }
 trim_whitespace <- function(x) {
     gsub("^[[:space:]]*|[[:space:]]*$", "", x)
