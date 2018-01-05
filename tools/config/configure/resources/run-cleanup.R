@@ -5,22 +5,21 @@ message(sprintf(fmt, DESCRIPTION$Package))
 
 # overlay user configuration
 envir <- new.env(parent = globalenv())
-files <- list.files("R/config/scripts", pattern = "[.][rR]$", full.names = TRUE)
+files <- list.files("tools/config/cleanup", pattern = "[.][rR]$", full.names = TRUE)
 for (file in files) {
     fmt <- "** sourcing '%s'"
     message(sprintf(fmt, file))
     source(file, local = envir)
 }
 
-# apply configure script (if any)
-config <- list()
-if (exists("configure", envir = envir, inherits = FALSE)) {
-    configure <- get("configure", envir = envir, inherits = FALSE)
-    message("** executing user-defined configure script")
-    config <- configure()
+# apply cleanup script (if any)
+if (exists("cleanup", envir = envir, inherits = FALSE)) {
+    cleanup <- get("cleanup", envir = envir, inherits = FALSE)
+    message("** executing user-defined cleanup script")
+    cleanup()
 }
 
-fmt <- "* successfully configured package '%s'"
+fmt <- "* successfully cleaned package '%s'"
 message(sprintf(fmt, DESCRIPTION$Package))
 
 

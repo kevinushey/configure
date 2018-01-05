@@ -4,8 +4,8 @@
 \alias{configure_file}
 \title{Configure a File}
 \usage{
-configure_file(source, target = sub("[.]in$", "", source),
-  config = read_config(), verbose = getOption("configure.verbose", TRUE))
+configure_file(source, target = sub("[.]in$", "", source), config = NULL,
+  verbose = getOption("configure.verbose", TRUE))
 }
 \arguments{
 \item{source}{The file to be configured.}
