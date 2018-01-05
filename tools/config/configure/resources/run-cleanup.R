@@ -1,6 +1,6 @@
 # figure out the current package's name
 DESCRIPTION <- read.dcf("DESCRIPTION", all = TRUE)
-fmt <- "* configuring package '%s' ..."
+fmt <- "* cleaning package '%s' ..."
 message(sprintf(fmt, DESCRIPTION$Package))
 
 # overlay user configuration
