@@ -196,3 +196,4 @@ source_file <- function(
 trim_whitespace <- function(x) {
     gsub("^[[:space:]]*|[[:space:]]*$", "", x)
 }
+
