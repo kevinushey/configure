@@ -86,7 +86,8 @@ read_config <- function(
 concatenate_files <- function(
     sources,
     target,
-    headers = sprintf("# %s ----", basename(sources)))
+    headers = sprintf("# %s ----", basename(sources)),
+    verbose = getOption("configure.verbose", TRUE))
 {
     pieces <- vapply(seq_along(sources), function(i) {
         source <- sources[[i]]
@@ -97,6 +98,13 @@ concatenate_files <- function(
 
     ensure_directory(dirname(target))
     writeLines(pieces, con = target)
+
+    if (verbose) {
+    	fmt <- "** created file '%s'"
+    	message(sprintf(fmt, target))
+    }
+
+    TRUE
 }
 
 #' Add Configure Infrastructure to an R Package
@@ -190,7 +198,7 @@ source_file <- function(
     envir = parent.frame())
 {
     contents <- read_file(path)
-    eval(parse(text = contents), envir = envir)
+    invisible(eval(parse(text = contents), envir = envir))
 }
 
 trim_whitespace <- function(x) {

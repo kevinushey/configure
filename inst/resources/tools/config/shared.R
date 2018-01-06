@@ -1,16 +1,3 @@
-# configure-package.R ----
-
-#' Configure R Packages for Installation
-#'
-#' Configure R packages for installation. This package provides a simple
-#' framework, allowing one to prepare an R package for installation on
-#' a particular platform using \R code.
-#'
-#' @docType package
-#' @name package
-NULL
-
-
 # utils.R ----
 
 #' Configure a File
@@ -101,7 +88,8 @@ read_config <- function(
 concatenate_files <- function(
     sources,
     target,
-    headers = sprintf("# %s ----", basename(sources)))
+    headers = sprintf("# %s ----", basename(sources)),
+    verbose = getOption("configure.verbose", TRUE))
 {
     pieces <- vapply(seq_along(sources), function(i) {
         source <- sources[[i]]
@@ -112,6 +100,13 @@ concatenate_files <- function(
 
     ensure_directory(dirname(target))
     writeLines(pieces, con = target)
+
+    if (verbose) {
+    	fmt <- "** created file '%s'"
+    	message(sprintf(fmt, target))
+    }
+
+    TRUE
 }
 
 #' Add Configure Infrastructure to an R Package
@@ -205,7 +200,7 @@ source_file <- function(
     envir = parent.frame())
 {
     contents <- read_file(path)
-    eval(parse(text = contents), envir = envir)
+    invisible(eval(parse(text = contents), envir = envir))
 }
 
 trim_whitespace <- function(x) {
@@ -215,23 +210,28 @@ trim_whitespace <- function(x) {
 
 # run.R ----
 
-# extract path to install script
-args <- commandArgs(TRUE)
-target <- args[[1]]
-path <- sprintf("tools/config/%s.R", target)
-if (!file.exists(path))
-    stop("no file available at path '", path, "'")
+local({
+	# extract path to install script
+	args <- commandArgs(TRUE)
+	target <- args[[1]]
+	path <- sprintf("tools/config/%s.R", target)
+	if (!file.exists(path)) {
+		fmt <- "* no script at path '%s', skipping %s"
+		message(sprintf(fmt, path, target))
+		return(invisible(TRUE))
+	}
 
-# report start of execution
-package <- Sys.getenv("R_PACKAGE_NAME", unset = "<unknown>")
-fmt <- "* preparing to %s '%s' ..."
-message(sprintf(fmt, target, package))
+	# report start of execution
+	package <- Sys.getenv("R_PACKAGE_NAME", unset = "<unknown>")
+	fmt <- "* preparing to %s package '%s' ..."
+	message(sprintf(fmt, target, package))
 
-# execute the requested script
-source_file(path)
+	# execute the requested script
+	source_file(path)
 
-# report end of execution
-fmt <- "* finished %s for '%s'"
-message(sprintf(fmt, target, package))
+	# report end of execution
+	fmt <- "* finished %s for package '%s'"
+	message(sprintf(fmt, target, package))
+})
 
 
