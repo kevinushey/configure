@@ -4,15 +4,15 @@
 \alias{configure_file}
 \title{Configure a File}
 \usage{
-configure_file(source, target = sub("[.]in$", "", source), config = NULL,
-  verbose = getOption("configure.verbose", TRUE))
+configure_file(source, target = sub("[.]in$", "", source),
+  config = configure_database(), verbose = configure_verbose())
 }
 \arguments{
 \item{source}{The file to be configured.}
 
 \item{target}{The file to be generated.}
 
-\item{config}{The configuration environment.}
+\item{config}{The configuration database.}
 
 \item{verbose}{Boolean; report files as they are configured?}
 }
@@ -20,4 +20,7 @@ configure_file(source, target = sub("[.]in$", "", source), config = NULL,
 Configure a file, replacing any instances of `@`-delimited variables, e.g.
 `@VAR@`, with the value of the variable called `VAR` in the associated
 `config` environment.
+}
+\seealso{
+Other configure: \code{\link{configure_directory}}
 }

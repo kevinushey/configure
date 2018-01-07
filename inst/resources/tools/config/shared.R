@@ -1,3 +1,40 @@
+# configure-database.R ----
+
+#' Retrieve the Global Configuration Database
+#'
+#' Retrieve the global configuration database (as an \R environment).
+#'
+#' @family configure-db
+#'
+#' @export
+configure_database <- function() {
+
+    # put configuration environment on search path
+    envir <- globalenv()
+    name <- ".__CONFIGURE_DATABASE__."
+    if (is.null(envir[[name]]))
+        envir[[name]] <- new.env(parent = emptyenv())
+    envir[[name]]
+
+}
+
+#' Define Variables for the Configuration Database
+#'
+#' Define variables to be used as part of the default configuration database.
+#' These will be used by [configure_file()] when no configuration database
+#' is explicitly supplied.
+#'
+#' @param ... A set of named arguments, mapping configuration names to values.
+#'
+#' @family configure-db
+#'
+#' @export
+configure_define <- function(...) {
+    envir <- configure_database()
+    list2env(list(...), envir = envir)
+}
+
+
 # utils.R ----
 
 #' Configure a File
@@ -8,15 +45,17 @@
 #'
 #' @param source The file to be configured.
 #' @param target The file to be generated.
-#' @param config The configuration environment.
+#' @param config The configuration database.
 #' @param verbose Boolean; report files as they are configured?
+#'
+#' @family configure
 #'
 #' @export
 configure_file <- function(
     source,
     target = sub("[.]in$", "", source),
-    config = NULL,
-    verbose = getOption("configure.verbose", TRUE))
+    config = configure_database(),
+    verbose = configure_verbose())
 {
     contents <- readLines(source, warn = FALSE)
     enumerate(config, function(key, val) {
@@ -34,27 +73,57 @@ configure_file <- function(
     }
 }
 
+#' Configure Files in a Directory
+#'
+#' This companion function to [configure_file()] can be used to
+#' configure all `.in` files within a directory.
+#'
+#' @param path The path to a directory in which files should be configured.
+#' @param config The configuration database to be used.
+#' @param verbose Boolean; report files as they are configured?
+#'
+#' @family configure
+#'
+#' @export
+configure_directory <- function(
+    path = ".",
+    config = configure_database(),
+    verbose = configure_verbose())
+{
+    files <- list.files(
+        path = path,
+        pattern = "[.]in$",
+        full.names = TRUE)
+
+    lapply(files, configure_file, config = config, verbose = verbose)
+}
+
 #' Read R Configuration for a Package
 #'
-#' Read the \R configuration, as through `R CMD config --all`.
+#' Read the \R configuration, as through `R CMD config`.
 #'
-#' @param package The path to an \R package's sources.
-#' @param values The \R configuration values to read (as a character vector).
-#'   If `NULL` (the default), all values are read (as through `R CMD config --all`).
+#' @param ... The \R configuration values to read (as a character vector).
+#'   If empty, all values are read as through `R CMD config --all`).
+#' @param package The path to the \R package's sources.
+#' @param envir The environment in which the configuration information should
+#'   be assigned. By default, the [configure_database()] is populated with the
+#'   requested values.
 #' @param verbose Boolean; notify the user as \R configuration is read?
 #'
 #' @export
-read_config <- function(
-    package = ".",
-    values  = NULL,
-    verbose = getOption("configure.verbose", TRUE))
+read_r_config <- function(
+    ...,
+    package = Sys.getenv("R_PACKAGE_DIR", unset = "."),
+    envir = configure_database(),
+    verbose = configure_verbose())
 {
     # move to requested directory
     owd <- setwd(package)
     on.exit(setwd(owd), add = TRUE)
     R <- file.path(R.home("bin"), "R")
 
-    if (is.null(values)) {
+    values <- list(...)
+    if (length(values) == 0) {
         if (verbose)
             message("** executing 'R CMD config --all'")
         output <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
@@ -72,7 +141,7 @@ read_config <- function(
         names(config) <- values
     }
 
-    list2env(config, parent = globalenv())
+    list2env(config, envir = envir)
 }
 
 #' Concatenate the Contents of a Set of Files
@@ -83,13 +152,14 @@ read_config <- function(
 #' @param sources An \R list of files
 #' @param target The file to use for generation.
 #' @param headers Headers to be used for each file copied.
+#' @param verbose Boolean; inform the user when the requested file is created?
 #'
 #' @export
 concatenate_files <- function(
     sources,
     target,
     headers = sprintf("# %s ----", basename(sources)),
-    verbose = getOption("configure.verbose", TRUE))
+    verbose = configure_verbose())
 {
     pieces <- vapply(seq_along(sources), function(i) {
         source <- sources[[i]]
@@ -102,8 +172,8 @@ concatenate_files <- function(
     writeLines(pieces, con = target)
 
     if (verbose) {
-    	fmt <- "** created file '%s'"
-    	message(sprintf(fmt, target))
+        fmt <- "** created file '%s'"
+        message(sprintf(fmt, target))
     }
 
     TRUE
@@ -181,7 +251,7 @@ read_file <- function(path) {
 
 remove_file <- function(
     path,
-    verbose = getOption("configure.verbose", TRUE))
+    verbose = configure_verbose())
 {
     info <- file.info(path)
     if (!is.na(info$isdir)) {
@@ -205,6 +275,10 @@ source_file <- function(
 
 trim_whitespace <- function(x) {
     gsub("^[[:space:]]*|[[:space:]]*$", "", x)
+}
+
+configure_verbose <- function() {
+    getOption("configure.verbose", !interactive())
 }
 
 

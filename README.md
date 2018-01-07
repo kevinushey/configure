@@ -26,10 +26,13 @@ This will write out a few files to your package's directory.
 
 - configure
 - configure.win
+- cleanup
+- cleanup.win
 - tools/config/shared.R
 
-Note that any pre-existing files will be overwritten, so be sure to back them
-up if necessary.
+The `configure{.win}` and `cleanup{.win}` scripts invoke the `shared.R` script,
+using command line arguments to route to either a user-defined configure script
+at `tools/config/configure.R`, or a cleanup script at `tools/config/cleanup.R`.
 
 ## Understanding configure and cleanup
 
@@ -62,6 +65,24 @@ the `configure_file()` helper function.
 
 ```r
 configure_file("src/Makevars.in", "src/Makevars")
+```
+
+This will substitute variables of the form `@VAR@` with the associated
+definition discovered in the configuration database. By default, the
+configuration database is empty, but you can populate it using the
+`configure_define()` function. For example, you might use the following
+to define the value for a variable called `STDVER`:
+
+```r
+configure_define(STDVER = "c++11")
+```
+
+If you want to read R's configuration -- for example, to discover what C
+compiler should be used for compilation, you can use the `read_r_config()`
+function:
+
+```r
+read_r_config(values = c("CC", "CXX"))
 ```
 
 ### Cleanup
