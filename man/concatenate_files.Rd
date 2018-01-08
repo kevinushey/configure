@@ -5,7 +5,8 @@
 \title{Concatenate the Contents of a Set of Files}
 \usage{
 concatenate_files(sources, target, headers = sprintf("# \%s ----",
-  basename(sources)), verbose = configure_verbose())
+  basename(sources)), preamble = NULL, postamble = NULL,
+  verbose = configure_verbose())
 }
 \arguments{
 \item{sources}{An \R list of files}
@@ -13,6 +14,10 @@ concatenate_files(sources, target, headers = sprintf("# \%s ----",
 \item{target}{The file to use for generation.}
 
 \item{headers}{Headers to be used for each file copied.}
+
+\item{preamble}{Text to be included at the beginning of the document.}
+
+\item{postamble}{Text to be included at the end of the document.}
 
 \item{verbose}{Boolean; inform the user when the requested file is created?}
 }

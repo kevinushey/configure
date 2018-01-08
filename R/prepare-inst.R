@@ -15,7 +15,8 @@ local({
         "tools/config/resources/run.R"
     )
 
-    concatenate_files(shared, "tools/config/shared.R")
+    LICENSE <- read_file("tools/config/resources/LICENSE")
+    concatenate_files(shared, "tools/config/shared.R", preamble = LICENSE)
 
     # copy to inst
     paths <- c(
