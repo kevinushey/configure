@@ -133,3 +133,12 @@ define(PACKAGE_NAME = "configure")
 
 and the existing machinery automatically generates and cleans up `zzz.R`
 as appropriate.
+
+## Licensing
+
+These components are licensed to you under the
+[MIT license](https://opensource.org/licenses/MIT), which should be compatible
+with all other major open-source licenses. However, if you prefer, you are free
+to instead re-license these components using the same open-source license you're
+releasing your R package under, as long as that license is a
+[CRAN-compatible](https://cran.rstudio.com/web/licenses/) license.
