@@ -74,7 +74,7 @@ configuration database is empty, but you can populate it using the
 to define the value for a variable called `STDVER`:
 
 ```r
-configure_define(STDVER = "c++11")
+define(STDVER = "c++11")
 ```
 
 If you want to read R's configuration -- for example, to discover what C
@@ -85,7 +85,7 @@ function:
 read_r_config("CC", "CXX")
 ```
 
-### Cleanup
+## Cleanup
 
 The cleanup stage's primary purpose is to remove files created during the
 configure stage. For example, we might want to remove the generated
@@ -94,3 +94,35 @@ Makevars files generated earlier:
 ```r
 unlink("src/Makevars")
 ```
+
+## Automatic Configuration
+
+The `configure` package tries to perform some of the most common configuration
+and cleanup steps automatically, to avoid overburdening the user when possible.
+In particular, all `.in` files discovered within the root, `R/`, and `src/`
+folders are automatically configured and cleaned up as required. This implies
+that, in many cases, it should be sufficient for a user to write a `configure.R`
+script whose only purpose is to define configuration variables.
+
+As an example, the `configure` package uses itself to manage configuration.
+The file
+[R/zzz.R.in](https://github.com/kevinushey/configure/blob/master/R/zzz.R.in)
+contains the single line:
+
+```r
+.PACKAGE <- "@PACKAGE_NAME@"
+```
+
+And the file at
+[tools/config/configure.R](https://github.com/kevinushey/configure/blob/master/tools/config/configure.R)
+contains only:
+
+```r
+define(PACKAGE_NAME = "configure")
+```
+
+and the existing machinery automatically generates and cleans up `zzz.R`
+as appropriate.
+
+This automatic configuration can be disabled by setting the R option
+`configure.common` to `FALSE`.

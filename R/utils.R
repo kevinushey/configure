@@ -62,6 +62,33 @@ configure_directory <- function(
     lapply(files, configure_file, config = config, verbose = verbose)
 }
 
+configure_auto <- function(type) {
+    configure_common(type = type)
+}
+
+configure_common <- function(type) {
+
+    if (!isTRUE(getOption("configure.common", default = TRUE)))
+        return(invisible(FALSE))
+
+    sources <- list.files(
+        path = c("R", "src"),
+        pattern = "[.]in$",
+        full.names = TRUE
+    )
+
+    sources <- sub("[.]/", "", sources)
+
+    if (type == "configure") {
+        lapply(sources, configure_file)
+    } else if (type == "cleanup") {
+        targets <- sub("[.]in$", "", sources)
+        lapply(targets, remove_file)
+    }
+
+    invisible(TRUE)
+}
+
 #' Read R Configuration for a Package
 #'
 #' Read the \R configuration, as through `R CMD config`.

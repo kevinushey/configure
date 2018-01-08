@@ -25,3 +25,6 @@ configure_define <- function(...) {
     envir <- configure_database()
     list2env(list(...), envir = envir)
 }
+
+#' @export
+define <- configure_define
