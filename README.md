@@ -30,10 +30,15 @@ This will write out a few files to your package's directory.
 - cleanup.win
 - tools/config.R
 
-The `configure{.win}` and `cleanup{.win}` scripts invoke the `tools/confg.R`
+The `configure{.win}` and `cleanup{.win}` scripts invoke the `tools/config.R`
 script. This script performs some automatic package configuration (described
 later), and also sources a user-defined configure script at
 `tools/config/configure.R`, or a cleanup script at `tools/config/cleanup.R`.
+
+It is not necessary for your package to import or explicitly depend on the
+`configure` package. The `use_configure()` function will copy all required files
+directly to `tools/config.R`, so in essence your package will embed all of
+the functionality provided by `configure`.
 
 ## Understanding configure and cleanup
 
