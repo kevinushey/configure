@@ -28,11 +28,12 @@ This will write out a few files to your package's directory.
 - configure.win
 - cleanup
 - cleanup.win
-- tools/config/shared.R
+- tools/config.R
 
-The `configure{.win}` and `cleanup{.win}` scripts invoke the `shared.R` script,
-using command line arguments to route to either a user-defined configure script
-at `tools/config/configure.R`, or a cleanup script at `tools/config/cleanup.R`.
+The `configure{.win}` and `cleanup{.win}` scripts invoke the `tools/confg.R`
+script. This script performs some automatic package configuration (described
+later), and also sources a user-defined configure script at
+`tools/config/configure.R`, or a cleanup script at `tools/config/cleanup.R`.
 
 ## Understanding configure and cleanup
 
@@ -64,7 +65,7 @@ through which this is accomplished is through translating `.in` files, with
 the `configure_file()` helper function.
 
 ```r
-configure_file("src/Makevars.in", "src/Makevars")
+configure_file("src/Makevars.in")
 ```
 
 This will substitute variables of the form `@VAR@` with the associated
@@ -78,12 +79,15 @@ define(STDVER = "c++11")
 ```
 
 If you want to read R's configuration -- for example, to discover what C
-compiler should be used for compilation, you can use the `read_r_config()`
+compiler should be used for compilation -- you can use the `read_r_config()`
 function:
 
 ```r
 read_r_config("CC", "CXX")
 ```
+
+The configuration database will automatically be populated with the values
+requested by R for `CC` and `CXX` in this case.
 
 ## Cleanup
 
@@ -99,10 +103,11 @@ unlink("src/Makevars")
 
 The `configure` package tries to perform some of the most common configuration
 and cleanup steps automatically, to avoid overburdening the user when possible.
-In particular, all `.in` files discovered within the root, `R/`, and `src/`
-folders are automatically configured and cleaned up as required. This implies
-that, in many cases, it should be sufficient for a user to write a `configure.R`
-script whose only purpose is to define configuration variables.
+In particular, all `.in` files discovered within the package top-level
+directory, `R/`, and `src/` folders are automatically configured and cleaned up
+as required. This implies that, in many cases, it should be sufficient for a
+user to write a `configure.R` script whose only purpose is to define
+configuration variables.
 
 As an example, the `configure` package uses itself to manage configuration.
 The file
@@ -123,6 +128,3 @@ define(PACKAGE_NAME = "configure")
 
 and the existing machinery automatically generates and cleans up `zzz.R`
 as appropriate.
-
-This automatic configuration can be disabled by setting the R option
-`configure.common` to `FALSE`.
