@@ -7,16 +7,10 @@
 #' @family configure-db
 #'
 #' @export
-configure_database <- function() {
-
-    # put configuration environment on search path
-    envir <- globalenv()
-    name <- ".__CONFIGURE_DATABASE__."
-    if (is.null(envir[[name]]))
-        envir[[name]] <- new.env(parent = emptyenv())
-    envir[[name]]
-
-}
+configure_database <- local({
+    database <- new.env(parent = emptyenv())
+    function() database
+})
 
 #' Define Variables for the Configuration Database
 #'
@@ -66,6 +60,9 @@ configure_file <- function(
 
     ensure_directory(dirname(target))
     writeLines(contents, con = target)
+
+    info <- file.info(source)
+    Sys.chmod(target, mode = info$mode)
 
     if (isTRUE(verbose)) {
         fmt <- "** configured file: '%s' => '%s'"
@@ -122,7 +119,7 @@ read_r_config <- function(
     on.exit(setwd(owd), add = TRUE)
     R <- file.path(R.home("bin"), "R")
 
-    values <- list(...)
+    values <- unlist(list(...), recursive = TRUE)
     if (length(values) == 0) {
         if (verbose)
             message("** executing 'R CMD config --all'")

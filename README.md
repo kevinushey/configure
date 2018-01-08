@@ -82,7 +82,7 @@ compiler should be used for compilation, you can use the `read_r_config()`
 function:
 
 ```r
-read_r_config(values = c("CC", "CXX"))
+read_r_config("CC", "CXX")
 ```
 
 ### Cleanup

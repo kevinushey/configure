@@ -5,16 +5,10 @@
 #' @family configure-db
 #'
 #' @export
-configure_database <- function() {
-
-    # put configuration environment on search path
-    envir <- globalenv()
-    name <- ".__CONFIGURE_DATABASE__."
-    if (is.null(envir[[name]]))
-        envir[[name]] <- new.env(parent = emptyenv())
-    envir[[name]]
-
-}
+configure_database <- local({
+    database <- new.env(parent = emptyenv())
+    function() database
+})
 
 #' Define Variables for the Configuration Database
 #'

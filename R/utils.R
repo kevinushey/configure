@@ -28,6 +28,9 @@ configure_file <- function(
     ensure_directory(dirname(target))
     writeLines(contents, con = target)
 
+    info <- file.info(source)
+    Sys.chmod(target, mode = info$mode)
+
     if (isTRUE(verbose)) {
         fmt <- "** configured file: '%s' => '%s'"
         message(sprintf(fmt, source, target))
@@ -83,7 +86,7 @@ read_r_config <- function(
     on.exit(setwd(owd), add = TRUE)
     R <- file.path(R.home("bin"), "R")
 
-    values <- list(...)
+    values <- unlist(list(...), recursive = TRUE)
     if (length(values) == 0) {
         if (verbose)
             message("** executing 'R CMD config --all'")
