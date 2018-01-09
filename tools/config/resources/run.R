@@ -6,7 +6,7 @@ local({
 
     # report start of execution
     package <- Sys.getenv("R_PACKAGE_NAME", unset = "<unknown>")
-    fmt <- "* preparing to %s package '%s' ..."
+    fmt <- "** preparing to %s package '%s' ..."
     message(sprintf(fmt, type, package))
 
     # execute the requested script
@@ -17,6 +17,6 @@ local({
     configure_auto(type = type)
 
     # report end of execution
-    fmt <- "* finished %s for package '%s'"
+    fmt <- "** finished %s for package '%s'"
     message(sprintf(fmt, type, package))
 })

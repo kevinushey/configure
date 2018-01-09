@@ -92,7 +92,7 @@ configure_file <- function(
     Sys.chmod(target, mode = info$mode)
 
     if (isTRUE(verbose)) {
-        fmt <- "** configured file: '%s' => '%s'"
+        fmt <- "*** configured file: '%s' => '%s'"
         message(sprintf(fmt, source, target))
     }
 }
@@ -254,7 +254,7 @@ read_r_config <- function(
 
         # notify user
         if (verbose)
-            message("** executing 'R CMD config --all'")
+            message("*** executing 'R CMD config --all'")
 
         # execute action
         stdout <- tempfile("r-cmd-config-", fileext = ".txt")
@@ -271,7 +271,7 @@ read_r_config <- function(
 
         # notify user
         if (verbose)
-            message("** executing 'R CMD config'")
+            message("*** executing 'R CMD config'")
 
         # loop through requested values and call R CMD config
         config <- lapply(values, function(value) {
@@ -331,7 +331,7 @@ concatenate_files <- function(
     writeLines(all, con = target)
 
     if (verbose) {
-        fmt <- "** created file '%s'"
+        fmt <- "*** created file '%s'"
         message(sprintf(fmt, target))
     }
 
@@ -460,7 +460,7 @@ remove_file <- function(
     }
 
     if (verbose) {
-        fmt <- "** removed file '%s'"
+        fmt <- "*** removed file '%s'"
         message(sprintf(fmt, path))
     }
 
@@ -525,7 +525,7 @@ local({
 
     # report start of execution
     package <- Sys.getenv("R_PACKAGE_NAME", unset = "<unknown>")
-    fmt <- "* preparing to %s package '%s' ..."
+    fmt <- "** preparing to %s package '%s' ..."
     message(sprintf(fmt, type, package))
 
     # execute the requested script
@@ -536,7 +536,7 @@ local({
     configure_auto(type = type)
 
     # report end of execution
-    fmt <- "* finished %s for package '%s'"
+    fmt <- "** finished %s for package '%s'"
     message(sprintf(fmt, type, package))
 })
 
