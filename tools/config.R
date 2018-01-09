@@ -56,13 +56,15 @@ define <- configure_define
 
 #' Configure a File
 #'
-#' Configure a file, replacing any instances of `@`-delimited variables, e.g.
-#' `@VAR@`, with the value of the variable called `VAR` in the associated
-#' `config` environment.
+#' Configure a file, replacing (by default) any instances of `@`-delimited
+#' variables, e.g. `@VAR@`, with the value of the variable called `VAR` in the
+#' associated `config` environment.
 #'
 #' @param source The file to be configured.
 #' @param target The file to be generated.
 #' @param config The configuration database.
+#' @param lhs The left-hand side marker; defaults to `@`.
+#' @param rhs The right-hand side marker; defaults to `@`.
 #' @param verbose Boolean; report files as they are configured?
 #'
 #' @family configure
@@ -72,11 +74,13 @@ configure_file <- function(
     source,
     target = sub("[.]in$", "", source),
     config = configure_database(),
+    lhs = "@",
+    rhs = "@",
     verbose = configure_verbose())
 {
     contents <- readLines(source, warn = FALSE)
     enumerate(config, function(key, val) {
-        needle <- paste("@", key, "@", sep = "")
+        needle <- paste(lhs, key, rhs, sep = "")
         replacement <- val
         contents <<- gsub(needle, replacement, contents)
     })
@@ -113,7 +117,8 @@ configure_directory <- function(
     files <- list.files(
         path = path,
         pattern = "[.]in$",
-        full.names = TRUE)
+        full.names = TRUE
+    )
 
     lapply(files, configure_file, config = config, verbose = verbose)
 }
@@ -346,12 +351,18 @@ remove_file <- function(
     verbose = configure_verbose())
 {
     info <- file.info(path)
-    if (!is.na(info$isdir)) {
-        unlink(path, recursive = isTRUE(info$isdir))
-        if (verbose) {
-            fmt <- "** removed file '%s'"
-            message(sprintf(fmt, path))
-        }
+    if (is.na(info$isdir))
+        return(TRUE)
+
+    unlink(path, recursive = isTRUE(info$isdir))
+    if (file.exists(path)) {
+        fmt <- "failed to remove file '%s' (insufficient permissions?)"
+        stop(sprintf(fmt, path))
+    }
+
+    if (verbose) {
+        fmt <- "** removed file '%s'"
+        message(sprintf(fmt, path))
     }
 
     TRUE
