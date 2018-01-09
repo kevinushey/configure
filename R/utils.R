@@ -258,6 +258,43 @@ use_configure <- function(package = ".") {
         DESCRIPTION <- gsub("\n{2,}", "\n", DESCRIPTION)
         cat(DESCRIPTION, file = "DESCRIPTION", sep = "\n")
     }
+
+    # write placeholders for 'configure.R', 'cleanup.R' if none exist
+    configure <- "tools/config/configure.R"
+    if (!file.exists("tools/config/configure.R")) {
+        text <- c(
+            "# Prepare your package for installation here.",
+            "# Use 'define()' to define configuration variables.",
+            "# Use 'configure_file()' to substitute configuration values.",
+            "",
+            ""
+        )
+        writeLines(text, con = configure)
+    }
+
+    cleanup <- "tools/config/cleanup.R"
+    if (!file.exists("tools/config/cleanup.R")) {
+        text <- c(
+            "# Clean up files generated during configuration here.",
+            "# Use 'remove_file()' to remove files generated during configuration.",
+            "",
+            ""
+        )
+        writeLines(text, con = cleanup)
+    }
+
+    # notify the user what we did
+    message("* Copied 'configure{.win}' and 'cleanup{.win}'.")
+    message("* Updated 'tools/config.R'.")
+
+    # open 'configure.R', 'cleanup.R' for editing if in RStudio
+    if (requireNamespace("rstudioapi", quietly = TRUE)) {
+        rstudioapi::navigateToFile("tools/config/configure.R", 5, 1)
+        rstudioapi::navigateToFile("tools/config/cleanup.R", 4, 1)
+    } else {
+        message("* Use 'tools/config/configure.R' for package configuration.")
+        message("* Use 'tools/config/cleanup.R' for package cleanup.")
+    }
 }
 
 ensure_directory <- function(dir) {
