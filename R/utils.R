@@ -68,7 +68,12 @@ configure_directory <- function(
 }
 
 configure_auto <- function(type) {
+
+    if (!isTRUE(getOption("configure.auto", default = TRUE)))
+        return(invisible(FALSE))
+
     configure_common(type = type)
+    configure_platform(type = type)
 }
 
 configure_common <- function(type) {
@@ -92,6 +97,63 @@ configure_common <- function(type) {
     }
 
     invisible(TRUE)
+}
+
+configure_platform <- function(type) {
+
+    if (!isTRUE(getOption("configure.platform", default = TRUE)))
+        return(invisible(FALSE))
+
+    sysname <- Sys.info()[["sysname"]]
+    switch(
+        sysname,
+        "Windows" = configure_platform_windows(type),
+        "Darwin"  = configure_platform_darwin(type),
+        "Linux"   = configure_platform_linux(type),
+        "SunOS"   = configure_platform_solaris(type),
+        stop("unrecognized platform '", sysname, "'")
+    )
+}
+
+configure_platform_common <- function(subdirs, type) {
+
+    dirs <- c("R", "src")
+    for (dir in dirs) {
+
+        # list files (take care to remove directories)
+        sources <- Filter(
+            function(file) identical(file.info(file)$isdir, FALSE),
+            list.files(file.path(dir, subdirs), full.names = TRUE)
+        )
+
+        # configure all discovered sources
+        for (source in sources) {
+            target <- file.path(dir, basename(source))
+            switch(type,
+                   configure = configure_file(source, target),
+                   cleanup   = remove_file(target))
+        }
+    }
+}
+
+configure_platform_windows <- function(type) {
+    subdirs <- c("windows", bitness("windows/win"))
+    configure_platform_common(subdirs, type)
+}
+
+configure_platform_darwin <- function(type) {
+    subdirs <- c("unix", "darwin", bitness("darwin/darwin"))
+    configure_platform_common(subdirs, type)
+}
+
+configure_platform_linux <- function(type) {
+    subdirs <- c("unix", "linux", bitness("linux/linux"))
+    configure_platform_common(subdirs, type)
+}
+
+configure_platform_solaris <- function(type) {
+    subdirs <- c("unix", "sunos", bitness("sunos/sunos"))
+    configure_platform_common(subdirs, type)
 }
 
 #' Read R Configuration for a Package
@@ -390,4 +452,8 @@ parse_key_value <- function(
 
     # put together into R list
     named(as.list(vals), keys)
+}
+
+bitness <- function(prefix = "") {
+    paste(prefix, .Machine$sizeof.pointer * 8, sep = "")
 }
