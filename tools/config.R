@@ -178,19 +178,48 @@ read_r_config <- function(
 
     values <- unlist(list(...), recursive = TRUE)
     if (length(values) == 0) {
+
+        # R CMD config --all only available since R 3.4.0
+        if (getRversion() < "3.4.0") {
+            fmt <- "'R CMD config --all' not available in R version '%s'"
+            stop(sprintf(fmt, getRversion()))
+        }
+
+        # notify user
         if (verbose)
             message("** executing 'R CMD config --all'")
-        output <- system2(R, c("CMD", "config", "--all"), stdout = TRUE)
-        equalsIndex <- regexpr("=", output, fixed = TRUE)
-        keys <- trim_whitespace(substring(output, 1, equalsIndex - 1))
-        config <- as.list(trim_whitespace(substring(output, equalsIndex + 1)))
-        names(config) <- keys
+
+        # execute action
+        stdout <- tempfile("r-cmd-config-", fileext = ".txt")
+        on.exit(unlink(stdout), add = TRUE)
+        status <- system2(R, c("CMD", "config", "--all"), stdout = stdout)
+        if (status)
+            stop("failed to execute 'R CMD config --all'")
+
+        # read and parse output
+        output <- readLines(stdout, warn = FALSE)
+        config <- parse_key_value(output)
 
     } else {
+
+        # notify user
         if (verbose)
             message("** executing 'R CMD config'")
+
+        # loop through requested values and call R CMD config
         config <- lapply(values, function(value) {
-            system2(R, c("CMD", "config", value), stdout = TRUE)
+
+            # execute it
+            stdout <- tempfile("r-cmd-config-", fileext = ".txt")
+            on.exit(unlink(stdout), add = TRUE)
+            status <- system2(R, c("CMD", "config", value), stdout = stdout)
+
+            # report failures as NULL (distinct from empty string)
+            if (status)
+                return(NULL)
+
+            readLines(stdout)
+
         })
         names(config) <- values
     }
@@ -342,6 +371,33 @@ trim_whitespace <- function(x) {
 
 configure_verbose <- function() {
     getOption("configure.verbose", !interactive())
+}
+
+named <- function(object, nm) {
+    names(object) <- nm
+    object
+}
+
+parse_key_value <- function(
+    text,
+    separator = "=",
+    trim = TRUE)
+{
+    # find the separator
+    index <- regexpr(separator, text, fixed = TRUE)
+
+    # split into parts
+    keys <- substring(text, 1, index - 1)
+    vals <- substring(text, index + 1)
+
+    # trim if requested
+    if (trim) {
+        keys <- trim_whitespace(keys)
+        vals <- trim_whitespace(vals)
+    }
+
+    # put together into R list
+    named(as.list(vals), keys)
 }
 
 
