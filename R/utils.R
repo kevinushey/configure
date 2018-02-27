@@ -350,7 +350,11 @@ use_configure <- function(package = ".") {
     message("* Updated 'tools/config.R'.")
 
     # open 'configure.R', 'cleanup.R' for editing if in RStudio
-    if (requireNamespace("rstudioapi", quietly = TRUE)) {
+    rstudio <-
+        !is.na(Sys.getenv("RSTUDIO", unset = NA)) &&
+        requireNamespace("rstudioapi", quietly = TRUE)
+
+    if (rstudio) {
         rstudioapi::navigateToFile("tools/config/configure.R", 5, 1)
         rstudioapi::navigateToFile("tools/config/cleanup.R", 4, 1)
     } else {
