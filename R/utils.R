@@ -401,15 +401,17 @@ remove_file <- function(
     if (is.na(info$isdir))
         return(TRUE)
 
+    name <- if (info$isdir) "directory" else "file"
+
     unlink(path, recursive = isTRUE(info$isdir))
     if (file.exists(path)) {
-        fmt <- "failed to remove file '%s' (insufficient permissions?)"
-        stop(sprintf(fmt, path))
+        fmt <- "failed to remove %s '%s' (insufficient permissions?)"
+        stop(sprintf(fmt, name, path))
     }
 
     if (verbose) {
-        fmt <- "*** removed file '%s'"
-        message(sprintf(fmt, path))
+        fmt <- "*** removed %s '%s'"
+        message(sprintf(fmt, name, path))
     }
 
     TRUE
