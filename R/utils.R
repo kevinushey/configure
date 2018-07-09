@@ -72,14 +72,17 @@ configure_auto <- function(type) {
     if (!isTRUE(getOption("configure.auto", default = TRUE)))
         return(invisible(FALSE))
 
-    configure_common(type = type)
-    configure_platform(type = type)
+    if (isTRUE(getOption("configure.common", default = TRUE)))
+        configure_common(type = type)
+
+    if (isTRUE(getOption("configure.platform", default = TRUE)))
+        configure_platform(type = type)
+
+    if (isTRUE(getOption("configure.unity", default = FALSE)))
+        configure_unity(type = type)
 }
 
 configure_common <- function(type) {
-
-    if (!isTRUE(getOption("configure.common", default = TRUE)))
-        return(invisible(FALSE))
 
     sources <- list.files(
         path = c("R", "src"),
@@ -100,9 +103,6 @@ configure_common <- function(type) {
 }
 
 configure_platform <- function(type) {
-
-    if (!isTRUE(getOption("configure.platform", default = TRUE)))
-        return(invisible(FALSE))
 
     sysname <- Sys.info()[["sysname"]]
     switch(
@@ -154,6 +154,55 @@ configure_platform_linux <- function(type) {
 configure_platform_solaris <- function(type) {
     subdirs <- c("unix", "sunos", bitness("sunos/sunos"))
     configure_platform_common(subdirs, type)
+}
+
+configure_unity <- function(type) {
+    switch(type,
+           configure = unity_stage_configure(),
+           cleanup   = unity_stage_cleanup())
+}
+
+unity_stage_configure <- function() {
+
+    # prepare directory holding old source files
+    unlink("src-old", recursive = TRUE)
+    ensure_directory("src-old")
+
+    # for each set of source file extensions, copy to
+    # old source directory and then generate unity build file
+    extensions <- c("c", "cpp")
+    for (extension in extensions) {
+
+        pattern <- sprintf("[.]%s$", extension)
+        names <- list.files("src", pattern = pattern)
+
+        originals <- file.path("src", names)
+        sources <- file.path("src-old", names)
+        file.rename(originals, sources)
+
+        target <- sprintf("src/unity-build-%1$s.%1$s", extension)
+        headers <- sprintf("/* %s */", basename(sources))
+        concatenate_files(sources = sources,
+                          target  = target,
+                          headers = headers,
+                          verbose = TRUE)
+    }
+
+}
+
+unity_stage_cleanup <- function() {
+
+    # find and remove the old unity build files
+    pattern <- "^unity-build"
+    files <- list.files("src", pattern = pattern, full.names = TRUE)
+    unlink(files)
+
+    # restore the old files
+    names <- list.files("src-old")
+    file.rename(
+        from = file.path("src-old", names),
+        to   = file.path("src", names)
+    )
 }
 
 #' Read R Configuration for a Package
@@ -322,6 +371,7 @@ use_configure <- function(package = ".") {
     }
 
     # write placeholders for 'configure.R', 'cleanup.R' if none exist
+    ensure_directory("tools/config")
     configure <- "tools/config/configure.R"
     if (!file.exists("tools/config/configure.R")) {
         text <- c(
@@ -363,12 +413,26 @@ use_configure <- function(package = ".") {
     }
 }
 
+#' Request a Unity Build
+#'
+#' Perform a 'unity' build. All C / C++ source files will be concatenated into a
+#' single file, and hence compiled as a single translation unit. This can
+#' greatly increase compile times when compiling code that makes heavy use
+#' of large header-only libraries (e.g. Rcpp or Boost).
+#'
+#' @param use Boolean; use a unity build?
+#'
+#' @export
+unity_build <- function(use = TRUE) {
+    options(configure.unity = identical(use, TRUE))
+}
+
 ensure_directory <- function(dir) {
     info <- file.info(dir)
 
     # no file exists at this location; try to make it
     if (is.na(info$isdir)) {
-        dir.create(info$isdir, recursive = TRUE, showWarnings = FALSE)
+        dir.create(dir, recursive = TRUE, showWarnings = FALSE)
         if (!file.exists(dir))
             stop("failed to create directory '", dir, "'")
         return(TRUE)
@@ -462,4 +526,25 @@ parse_key_value <- function(
 
 bitness <- function(prefix = "") {
     paste(prefix, .Machine$sizeof.pointer * 8, sep = "")
+}
+
+move_directory <- function(source, target) {
+
+    # ensure we're trying to move a directory
+    info <- file.info(source)
+    if (is.na(info$isdir)) {
+        fmt <- "no directory exists at path '%s'"
+        stop(sprintf(fmt, source), call. = FALSE)
+    }
+
+    if (!info$isdir) {
+        fmt <- "'%s' exists but is not a directory"
+        stop(sprintf(fmt, source), call. = FALSE)
+    }
+
+    # good to go -- let's move it
+    unlink(target, recursive = TRUE)
+    file.rename(source, target)
+    unlink(source, recursive = TRUE)
+
 }
