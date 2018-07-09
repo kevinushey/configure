@@ -176,6 +176,9 @@ unity_stage_configure <- function() {
         pattern <- sprintf("[.]%s$", extension)
         names <- list.files("src", pattern = pattern)
 
+        exclude <- getOption("configure.unity.exclude")
+        names <- setdiff(names, exclude)
+
         originals <- file.path("src", names)
         sources <- file.path("src-old", names)
         file.rename(originals, sources)
@@ -420,11 +423,13 @@ use_configure <- function(package = ".") {
 #' greatly increase compile times when compiling code that makes heavy use
 #' of large header-only libraries (e.g. Rcpp or Boost).
 #'
-#' @param use Boolean; use a unity build?
+#' @param exclude A set of files (specified by their name) to exclude from the
+#'   unity build.
 #'
 #' @export
-unity_build <- function(use = TRUE) {
-    options(configure.unity = identical(use, TRUE))
+unity_build <- function(exclude = "test-runner.cpp") {
+    options(configure.unity = TRUE)
+    options(configure.unity.exclude = exclude)
 }
 
 ensure_directory <- function(dir) {

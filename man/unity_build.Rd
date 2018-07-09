@@ -4,10 +4,11 @@
 \alias{unity_build}
 \title{Request a Unity Build}
 \usage{
-unity_build(use = TRUE)
+unity_build(exclude = "test-runner.cpp")
 }
 \arguments{
-\item{use}{Boolean; use a unity build?}
+\item{exclude}{A set of files (specified by their name) to exclude from the
+unity build.}
 }
 \description{
 Perform a 'unity' build. All C / C++ source files will be concatenated into a
