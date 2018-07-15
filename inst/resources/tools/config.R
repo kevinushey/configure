@@ -22,25 +22,39 @@
 
 #' Retrieve the Global Configuration Database
 #'
-#' Retrieve the global configuration database (as an \R environment).
-#'
-#' @family configure-db
+#' Retrieve the global configuration database.
+#' `db` is a helper alias for the database
+#' returned by `configure_database()`.
 #'
 #' @export
 configure_database <- local({
     database <- new.env(parent = emptyenv())
+    class(database) <- "configure_database"
     function() database
 })
+
+#' @export
+print.configure_database <- function(x, ...) {
+    str.configure_database(x, ...)
+}
+
+#' @export
+str.configure_database <- function(object, ...) {
+    writeLines("<configure database>")
+    objects <- mget(ls(envir = object, all.names = TRUE), object)
+    output <- utils::capture.output(utils::str(objects, ...))
+    writeLines(output[-1])
+    invisible(output)
+}
 
 #' Define Variables for the Configuration Database
 #'
 #' Define variables to be used as part of the default configuration database.
 #' These will be used by [configure_file()] when no configuration database
-#' is explicitly supplied.
+#' is explicitly supplied. [define()] is provided as a shorter alias for the
+#' same function.
 #'
 #' @param ... A set of named arguments, mapping configuration names to values.
-#'
-#' @family configure-db
 #'
 #' @export
 configure_define <- function(...) {
@@ -48,8 +62,13 @@ configure_define <- function(...) {
     list2env(list(...), envir = envir)
 }
 
+#' @rdname configure_define
 #' @export
 define <- configure_define
+
+#' @rdname configure_database
+#' @export
+db <- configure_database()
 
 
 # utils.R ----
@@ -262,6 +281,44 @@ unity_stage_cleanup <- function() {
         from = file.path("src-old", names),
         to   = file.path("src", names)
     )
+}
+
+#' Execute R CMD config
+#'
+#' Read information about how \R is configured as through `R CMD config`.
+#'
+#' @param ... The names of potential configuration values.
+#'
+#' @export
+r_cmd_config <- function(...) {
+    R <- file.path(R.home("bin"), "R")
+
+    # suppress cygwin path warnings for windows
+    if (Sys.info()[["sysname"]] == "Windows") {
+        CYGWIN <- Sys.getenv("CYGWIN")
+        Sys.setenv(CYGWIN = "nodosfilewarning")
+        on.exit(Sys.setenv(CYGWIN = CYGWIN), add = TRUE)
+    }
+
+    # loop through requested values and call R CMD config
+    values <- unlist(list(...), recursive = TRUE)
+    config <- lapply(values, function(value) {
+
+        # execute it
+        stdout <- tempfile("r-cmd-config-", fileext = ".txt")
+        on.exit(unlink(stdout), add = TRUE)
+        status <- system2(R, c("CMD", "config", value), stdout = stdout)
+
+        # report failures as NULL (distinct from empty string)
+        if (status)
+            return(NULL)
+
+        readLines(stdout)
+
+    })
+
+    names(config) <- values
+    config
 }
 
 #' Read R Configuration for a Package

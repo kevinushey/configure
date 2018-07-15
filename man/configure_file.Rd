@@ -15,16 +15,16 @@ configure_file(source, target = sub("[.]in$", "", source),
 
 \item{config}{The configuration database.}
 
-\item{lhs}{The left-hand side marker; defaults to `@`.}
+\item{lhs}{The left-hand side marker; defaults to \code{@}.}
 
-\item{rhs}{The right-hand side marker; defaults to `@`.}
+\item{rhs}{The right-hand side marker; defaults to \code{@}.}
 
 \item{verbose}{Boolean; report files as they are configured?}
 }
 \description{
-Configure a file, replacing (by default) any instances of `@`-delimited
-variables, e.g. `@VAR@`, with the value of the variable called `VAR` in the
-associated `config` environment.
+Configure a file, replacing (by default) any instances of \code{@}-delimited
+variables, e.g. \code{@VAR@}, with the value of the variable called \code{VAR} in the
+associated \code{config} environment.
 }
 \seealso{
 Other configure: \code{\link{configure_directory}}

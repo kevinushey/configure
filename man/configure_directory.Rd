@@ -15,8 +15,8 @@ configure_directory(path = ".", config = configure_database(),
 \item{verbose}{Boolean; report files as they are configured?}
 }
 \description{
-This companion function to [configure_file()] can be used to
-configure all `.in` files within a directory.
+This companion function to \code{\link[=configure_file]{configure_file()}} can be used to
+configure all \code{.in} files within a directory.
 }
 \seealso{
 Other configure: \code{\link{configure_file}}

@@ -9,6 +9,8 @@ Description: Configure R packages for installation with R. This package allows
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.0.1
 Biarch: TRUE
-Suggests: testthat
+Imports: utils
+Suggests: testthat, rstudioapi

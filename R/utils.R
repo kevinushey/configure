@@ -208,6 +208,44 @@ unity_stage_cleanup <- function() {
     )
 }
 
+#' Execute R CMD config
+#'
+#' Read information about how \R is configured as through `R CMD config`.
+#'
+#' @param ... The names of potential configuration values.
+#'
+#' @export
+r_cmd_config <- function(...) {
+    R <- file.path(R.home("bin"), "R")
+
+    # suppress cygwin path warnings for windows
+    if (Sys.info()[["sysname"]] == "Windows") {
+        CYGWIN <- Sys.getenv("CYGWIN")
+        Sys.setenv(CYGWIN = "nodosfilewarning")
+        on.exit(Sys.setenv(CYGWIN = CYGWIN), add = TRUE)
+    }
+
+    # loop through requested values and call R CMD config
+    values <- unlist(list(...), recursive = TRUE)
+    config <- lapply(values, function(value) {
+
+        # execute it
+        stdout <- tempfile("r-cmd-config-", fileext = ".txt")
+        on.exit(unlink(stdout), add = TRUE)
+        status <- system2(R, c("CMD", "config", value), stdout = stdout)
+
+        # report failures as NULL (distinct from empty string)
+        if (status)
+            return(NULL)
+
+        readLines(stdout)
+
+    })
+
+    names(config) <- values
+    config
+}
+
 #' Read R Configuration for a Package
 #'
 #' Read the \R configuration, as through `R CMD config`.

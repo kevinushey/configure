@@ -9,16 +9,16 @@ read_r_config(..., package = Sys.getenv("R_PACKAGE_DIR", unset = "."),
 }
 \arguments{
 \item{...}{The \R configuration values to read (as a character vector).
-If empty, all values are read as through `R CMD config --all`).}
+If empty, all values are read as through \code{R CMD config --all}).}
 
 \item{package}{The path to the \R package's sources.}
 
 \item{envir}{The environment in which the configuration information should
-be assigned. By default, the [configure_database()] is populated with the
+be assigned. By default, the \code{\link[=configure_database]{configure_database()}} is populated with the
 requested values.}
 
 \item{verbose}{Boolean; notify the user as \R configuration is read?}
 }
 \description{
-Read the \R configuration, as through `R CMD config`.
+Read the \R configuration, as through \code{R CMD config}.
 }

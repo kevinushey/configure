@@ -2,18 +2,19 @@
 % Please edit documentation in R/configure-database.R
 \name{configure_define}
 \alias{configure_define}
+\alias{define}
 \title{Define Variables for the Configuration Database}
 \usage{
 configure_define(...)
+
+define(...)
 }
 \arguments{
 \item{...}{A set of named arguments, mapping configuration names to values.}
 }
 \description{
 Define variables to be used as part of the default configuration database.
-These will be used by [configure_file()] when no configuration database
-is explicitly supplied.
-}
-\seealso{
-Other configure-db: \code{\link{configure_database}}
+These will be used by \code{\link[=configure_file]{configure_file()}} when no configuration database
+is explicitly supplied. \code{\link[=define]{define()}} is provided as a shorter alias for the
+same function.
 }
