@@ -21,3 +21,4 @@ configure all \code{.in} files within a directory.
 \seealso{
 Other configure: \code{\link{configure_file}}
 }
+\concept{configure}

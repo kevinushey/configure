@@ -29,3 +29,4 @@ associated \code{config} environment.
 \seealso{
 Other configure: \code{\link{configure_directory}}
 }
+\concept{configure}

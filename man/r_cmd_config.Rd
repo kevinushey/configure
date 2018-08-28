@@ -4,10 +4,13 @@
 \alias{r_cmd_config}
 \title{Execute R CMD config}
 \usage{
-r_cmd_config(...)
+r_cmd_config(..., simplify = TRUE)
 }
 \arguments{
 \item{...}{The names of potential configuration values.}
+
+\item{simplify}{Boolean; simplify in the case where a single value was
+requested?}
 }
 \description{
 Read information about how \R is configured as through \code{R CMD config}.

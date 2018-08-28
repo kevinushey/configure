@@ -153,8 +153,6 @@ configure_auto <- function(type) {
     if (isTRUE(getOption("configure.platform", default = TRUE)))
         configure_platform(type = type)
 
-    if (isTRUE(getOption("configure.unity", default = FALSE)))
-        configure_unity(type = type)
 }
 
 configure_common <- function(type) {
@@ -231,66 +229,16 @@ configure_platform_solaris <- function(type) {
     configure_platform_common(subdirs, type)
 }
 
-configure_unity <- function(type) {
-    switch(type,
-           configure = unity_stage_configure(),
-           cleanup   = unity_stage_cleanup())
-}
-
-unity_stage_configure <- function() {
-
-    # prepare directory holding old source files
-    unlink("src-old", recursive = TRUE)
-    ensure_directory("src-old")
-
-    # for each set of source file extensions, copy to
-    # old source directory and then generate unity build file
-    extensions <- c("c", "cpp")
-    for (extension in extensions) {
-
-        pattern <- sprintf("[.]%s$", extension)
-        names <- list.files("src", pattern = pattern)
-
-        exclude <- getOption("configure.unity.exclude")
-        names <- setdiff(names, exclude)
-
-        originals <- file.path("src", names)
-        sources <- file.path("src-old", names)
-        file.rename(originals, sources)
-
-        target <- sprintf("src/unity-build-%1$s.%1$s", extension)
-        headers <- sprintf("/* %s */", basename(sources))
-        concatenate_files(sources = sources,
-                          target  = target,
-                          headers = headers,
-                          verbose = TRUE)
-    }
-
-}
-
-unity_stage_cleanup <- function() {
-
-    # find and remove the old unity build files
-    pattern <- "^unity-build"
-    files <- list.files("src", pattern = pattern, full.names = TRUE)
-    unlink(files)
-
-    # restore the old files
-    names <- list.files("src-old")
-    file.rename(
-        from = file.path("src-old", names),
-        to   = file.path("src", names)
-    )
-}
-
 #' Execute R CMD config
 #'
 #' Read information about how \R is configured as through `R CMD config`.
 #'
 #' @param ... The names of potential configuration values.
+#' @param simplify Boolean; simplify in the case where a single value was
+#'   requested?
 #'
 #' @export
-r_cmd_config <- function(...) {
+r_cmd_config <- function(..., simplify = TRUE) {
     R <- file.path(R.home("bin"), "R")
 
     # suppress cygwin path warnings for windows
@@ -318,6 +266,10 @@ r_cmd_config <- function(...) {
     })
 
     names(config) <- values
+
+    if (simplify && length(config) == 1)
+        return(config[[1]])
+
     config
 }
 
@@ -527,22 +479,6 @@ use_configure <- function(package = ".") {
         message("* Use 'tools/config/configure.R' for package configuration.")
         message("* Use 'tools/config/cleanup.R' for package cleanup.")
     }
-}
-
-#' Request a Unity Build
-#'
-#' Perform a 'unity' build. All C / C++ source files will be concatenated into a
-#' single file, and hence compiled as a single translation unit. This can
-#' greatly increase compile times when compiling code that makes heavy use
-#' of large header-only libraries (e.g. Rcpp or Boost).
-#'
-#' @param exclude A set of files (specified by their name) to exclude from the
-#'   unity build.
-#'
-#' @export
-unity_build <- function(exclude = "test-runner.cpp") {
-    options(configure.unity = TRUE)
-    options(configure.unity.exclude = exclude)
 }
 
 ensure_directory <- function(dir) {
