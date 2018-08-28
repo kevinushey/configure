@@ -299,7 +299,7 @@ read_r_config <- function(
 concatenate_files <- function(
     sources,
     target,
-    headers = sprintf("# %s ----", basename(sources)),
+    headers = section_header(basename(sources)),
     preamble = NULL,
     postamble = NULL,
     verbose = configure_verbose())
@@ -525,5 +525,26 @@ move_directory <- function(source, target) {
     unlink(target, recursive = TRUE)
     file.rename(source, target)
     unlink(source, recursive = TRUE)
+
+}
+
+section_header <- function(
+    label,
+    prefix = "#",
+    suffix = "-",
+    length = 78L)
+{
+
+    # figure out length of full header
+    n <- length - nchar(label) - nchar(prefix) - 2L
+    n[n < 0] <- 0
+
+    # generate '-' suffixes
+    tail <- vapply(n, function(i) {
+        paste(rep(suffix, i), collapse = "")
+    }, character(1))
+
+    # join it all together
+    paste(prefix, label, tail)
 
 }

@@ -1,4 +1,4 @@
-local({
+if (!interactive()) {
 
     # extract path to install script
     args <- commandArgs(TRUE)
@@ -19,4 +19,5 @@ local({
     # report end of execution
     fmt <- "** finished %s for package '%s'"
     message(sprintf(fmt, type, package))
-})
+
+}

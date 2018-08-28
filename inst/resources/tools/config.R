@@ -1,4 +1,4 @@
-# Copyright 2017 Kevin Ushey
+# Copyright 2017-2018  Kevin Ushey
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy of
 # this software and associated documentation files (the "Software"), to deal in
@@ -18,7 +18,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-# configure-database.R ----
+# configure-database.R -------------------------------------------------------
 
 #' Retrieve the Global Configuration Database
 #'
@@ -71,7 +71,7 @@ define <- configure_define
 db <- configure_database()
 
 
-# utils.R ----
+# utils.R --------------------------------------------------------------------
 
 #' Configure a File
 #'
@@ -374,7 +374,7 @@ read_r_config <- function(
 concatenate_files <- function(
     sources,
     target,
-    headers = sprintf("# %s ----", basename(sources)),
+    headers = section_header(basename(sources)),
     preamble = NULL,
     postamble = NULL,
     verbose = configure_verbose())
@@ -603,10 +603,31 @@ move_directory <- function(source, target) {
 
 }
 
+section_header <- function(
+    label,
+    prefix = "#",
+    suffix = "-",
+    length = 78L)
+{
 
-# run.R ----
+    # figure out length of full header
+    n <- length - nchar(label) - nchar(prefix) - 2L
+    n[n < 0] <- 0
 
-local({
+    # generate '-' suffixes
+    tail <- vapply(n, function(i) {
+        paste(rep(suffix, i), collapse = "")
+    }, character(1))
+
+    # join it all together
+    paste(prefix, label, tail)
+
+}
+
+
+# run.R ----------------------------------------------------------------------
+
+if (!interactive()) {
 
     # extract path to install script
     args <- commandArgs(TRUE)
@@ -627,6 +648,7 @@ local({
     # report end of execution
     fmt <- "** finished %s for package '%s'"
     message(sprintf(fmt, type, package))
-})
+
+}
 
 
