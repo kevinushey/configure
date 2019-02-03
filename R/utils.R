@@ -103,10 +103,10 @@ configure_common <- function(type) {
 configure_platform <- function(type) {
 
     sysname <- tolower(Sys.info()[["sysname"]])
-    subdirs <- if (sysname == "windows")
-        c("windows", bitfixed("windows/win"))
-    else
-        c("unix", sysname, bitfixed(file.path(sysname, sysname)))
+
+    subdirs <- sysname
+    if (sysname != "windows")
+        subdirs <- c("unix", subdirs)
 
     dirs <- c("R", "src")
     for (dir in dirs) {
@@ -474,10 +474,6 @@ parse_key_value <- function(
 
     # put together into R list
     named(as.list(vals), keys)
-}
-
-bitfixed <- function(prefix = "") {
-    paste(prefix, .Machine$sizeof.pointer * 8, sep = "")
 }
 
 move_directory <- function(source, target) {
