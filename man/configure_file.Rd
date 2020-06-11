@@ -4,9 +4,14 @@
 \alias{configure_file}
 \title{Configure a File}
 \usage{
-configure_file(source, target = sub("[.]in$", "", source),
-  config = configure_database(), lhs = "@", rhs = "@",
-  verbose = configure_verbose())
+configure_file(
+  source,
+  target = sub("[.]in$", "", source),
+  config = configure_database(),
+  lhs = "@",
+  rhs = "@",
+  verbose = configure_verbose()
+)
 }
 \arguments{
 \item{source}{The file to be configured.}
@@ -23,10 +28,11 @@ configure_file(source, target = sub("[.]in$", "", source),
 }
 \description{
 Configure a file, replacing (by default) any instances of \code{@}-delimited
-variables, e.g. \code{@VAR@}, with the value of the variable called \code{VAR} in the
+variables, e.g. \verb{@VAR@}, with the value of the variable called \code{VAR} in the
 associated \code{config} environment.
 }
 \seealso{
-Other configure: \code{\link{configure_directory}}
+Other configure: 
+\code{\link{configure_directory}()}
 }
 \concept{configure}

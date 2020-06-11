@@ -3,7 +3,6 @@
 \docType{package}
 \name{package}
 \alias{package}
-\alias{package-package}
 \title{Configure R Packages for Installation}
 \description{
 Configure R packages for installation. This package provides a simple

@@ -4,8 +4,11 @@
 \alias{configure_directory}
 \title{Configure Files in a Directory}
 \usage{
-configure_directory(path = ".", config = configure_database(),
-  verbose = configure_verbose())
+configure_directory(
+  path = ".",
+  config = configure_database(),
+  verbose = configure_verbose()
+)
 }
 \arguments{
 \item{path}{The path to a directory in which files should be configured.}
@@ -19,6 +22,7 @@ This companion function to \code{\link[=configure_file]{configure_file()}} can b
 configure all \code{.in} files within a directory.
 }
 \seealso{
-Other configure: \code{\link{configure_file}}
+Other configure: 
+\code{\link{configure_file}()}
 }
 \concept{configure}

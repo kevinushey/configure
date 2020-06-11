@@ -4,12 +4,16 @@
 \alias{read_r_config}
 \title{Read R Configuration for a Package}
 \usage{
-read_r_config(..., package = Sys.getenv("R_PACKAGE_DIR", unset = "."),
-  envir = configure_database(), verbose = configure_verbose())
+read_r_config(
+  ...,
+  package = Sys.getenv("R_PACKAGE_DIR", unset = "."),
+  envir = configure_database(),
+  verbose = configure_verbose()
+)
 }
 \arguments{
 \item{...}{The \R configuration values to read (as a character vector).
-If empty, all values are read as through \code{R CMD config --all}).}
+If empty, all values are read as through \verb{R CMD config --all}).}
 
 \item{package}{The path to the \R package's sources.}
 
@@ -20,5 +24,5 @@ requested values.}
 \item{verbose}{Boolean; notify the user as \R configuration is read?}
 }
 \description{
-Read the \R configuration, as through \code{R CMD config}.
+Read the \R configuration, as through \verb{R CMD config}.
 }

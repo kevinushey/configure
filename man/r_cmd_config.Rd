@@ -13,5 +13,5 @@ r_cmd_config(..., simplify = TRUE)
 requested?}
 }
 \description{
-Read information about how \R is configured as through \code{R CMD config}.
+Read information about how \R is configured as through \verb{R CMD config}.
 }

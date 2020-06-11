@@ -4,9 +4,14 @@
 \alias{concatenate_files}
 \title{Concatenate the Contents of a Set of Files}
 \usage{
-concatenate_files(sources, target,
-  headers = section_header(basename(sources)), preamble = NULL,
-  postamble = NULL, verbose = configure_verbose())
+concatenate_files(
+  sources,
+  target,
+  headers = section_header(basename(sources)),
+  preamble = NULL,
+  postamble = NULL,
+  verbose = configure_verbose()
+)
 }
 \arguments{
 \item{sources}{An \R list of files}

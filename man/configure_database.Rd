@@ -5,7 +5,9 @@
 \alias{configure_database}
 \alias{db}
 \title{Retrieve the Global Configuration Database}
-\format{An object of class \code{configure_database} of length 0.}
+\format{
+An object of class \code{configure_database} of length 0.
+}
 \usage{
 configure_database()
 
