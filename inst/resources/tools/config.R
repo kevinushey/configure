@@ -97,7 +97,10 @@ configure_file <- function(
     rhs = "@",
     verbose = configure_verbose())
 {
+    # read source file
     contents <- readLines(source, warn = FALSE)
+
+    # replace defined variables
     enumerate(config, function(key, val) {
         needle <- paste(lhs, key, rhs, sep = "")
         replacement <- val
@@ -105,8 +108,15 @@ configure_file <- function(
     })
 
     ensure_directory(dirname(target))
-    writeLines(contents, con = target)
 
+    # write configured file to target location
+    # prefer unix newlines for Makevars
+    mode <- if (target %in% "Makevars") "wb" else "w"
+    conn <- file(target, open = mode)
+    on.exit(close(conn), add = TRUE)
+    writeLines(contents, con = conn)
+
+    # copy over source permissions
     info <- file.info(source)
     Sys.chmod(target, mode = info$mode)
 
